@@ -4,6 +4,8 @@
   <arg name="vessel_param_file" />
   <arg name="common_param_file"/>
   <arg name="vessel_model_file" default="$(find asv_simulator)/config/models/viknes.urdf" />
+  <arg name="loss_guidance_file"/>
+
   <arg name="initial_state" default="[0.0, 0.0, 1.57, 1.,0.,0.]" />
   <arg name="use_vo" default="False" />
   <arg name="use_sb_mpc" default="True" />
@@ -26,8 +28,9 @@
           type="asv_ctrl_los_node.py"
           respawn="false"
           output="screen">
-      <rosparam param="u_d" subst_value="True">$(arg u_d)</rosparam>
       <rosparam command="load" file="$(arg waypoint_file)" />
+      <rosparam command="load" file="$(arg loss_guidance_file)" />
+
       <remap from="cmd_vel" to="LOS/cmd_vel" if="$(arg use_vo)"/> 
       <remap from="cmd_vel" to="LOS/cmd_vel" if="$(arg use_sb_mpc)"/> 
       

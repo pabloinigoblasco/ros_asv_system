@@ -4,6 +4,7 @@
     <arg name="waypoint_file" value="$(find asv_simulator)/config/waypoints/south_to_north.yaml" />
       <arg name="vessel_param_file" value="$(find collision_avoidance_in_singapore)/config/tug_punitha.yaml"/>
       <arg name="common_param_file" value="$(find collision_avoidance_in_singapore)/config/common.yaml"/>
+      <arg name="common_param_file" value="$(find collision_avoidance_in_singapore)/config/tug_punitha_lossguidance.yaml"/>
   </include>
 
   <!-- Obstacle ship -->
@@ -11,6 +12,8 @@
     <arg name="waypoint_file" value="$(find asv_simulator)/config/waypoints/north_to_south.yaml" />
     <arg name="vessel_param_file" value="$(find collision_avoidance_in_singapore)/config/vessel_punitha.yaml"/>
     <arg name="common_param_file" value="$(find collision_avoidance_in_singapore)/config/common.yaml"/>
+    <arg name="common_param_file" value="$(find collision_avoidance_in_singapore)/config/vessel_punitha_lossguidance.yaml"/>
+    
     <arg name="use_vo" value="False" />
     <arg name="use_sb_mpc" value="False" />
     <arg name="vessel_model_file" value="$(find asv_simulator)/config/models/ship1.urdf" />
