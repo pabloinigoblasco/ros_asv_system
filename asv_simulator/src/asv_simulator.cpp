@@ -106,6 +106,12 @@ void Vessel::initialize(ros::NodeHandle nh)
   if (!nh.getParam("Fy_current", Fy_current))
     Fy_current = 0.0;
 
+  //alternative simple perturbance model based on current speed
+  if(!nh.getParam("Vx_current", Vx_current))
+     Vx_current = 0.0;
+  if(!nh.getParam("Vy_current", Vy_current))
+     Vy_current = 0.0;
+
   std::vector<double> initial_state;
   if (nh.getParam("initial_state", initial_state))
     {
@@ -215,7 +221,7 @@ void Vessel::updateSystem(double u_d, double psi_d, double r_d)
   tau_waves[2] = wave_filter_psi.updateFilter();
 
   // Integrate system
-  eta += DT * (rot_z * nu);
+  eta += DT * (rot_z * nu + Eigen::Vector3d(Vx_current, Vy_current, 0));
   nu  += DT * (Minv * (tau + tau_const_disturbance + tau_waves - Cvv - Dvv));
 
   // Keep yaw within [-PI,PI)
