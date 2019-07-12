@@ -2,7 +2,7 @@
 
 radius: 15.0 # m (In reality 12 m)
 
-mass: 3980.0 # kg
+mass: 333000 # kg
 inertia: 19703.0 # kg/m2
 
 # Added mass terms
