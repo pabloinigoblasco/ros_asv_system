@@ -125,15 +125,6 @@ def subscribe_to_pos():
 
     # rospy.spin()
 
-def resize(f_arr, s_arr):
-    f_len = len(f_arr)
-    s_len = len(s_arr)
-
-    if f_len > s_len:
-        return (f_arr[f_len - s_len:], s_arr)
-    else:
-        return (f_arr, s_arr[s_len - f_len:])
-
 if __name__== "__main__":
     mins_obs1 = []
     mins_obs2 = []
