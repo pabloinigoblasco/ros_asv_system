@@ -47,10 +47,9 @@ def set_cur_params(cur_speed, cur_ra, cur_tug_speed, cur_obs_speed):
     # Setting current speed
     rospy.set_param("/asv/asv/Vx_current", cur_speed)
     rospy.set_param("/obstacles/ship1/ship1/Vx_current", cur_speed)
-    rospy.set_param("/obstacles/ship1/ship1/Vx_current", cur_speed)
+    rospy.set_param("/obstacles/ship2/ship2/Vx_current", cur_speed)
 
     # Setting acceptance radius
-    rospy.set_param("/asv/asv/Vx_current", cur_ra)
     rospy.set_param("/obstacles/ship1/LOSNode/acceptance_radius", cur_ra)
     rospy.set_param("/obstacles/ship2/LOSNode/acceptance_radius", cur_ra)
 
