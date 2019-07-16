@@ -4,6 +4,7 @@ import rospy
 import subprocess
 import signal
 import scipy
+import sys
 
 # Import the datatype for the messages
 from geometry_msgs.msg import PoseStamped
@@ -56,29 +57,70 @@ def set_cur_params(cur_speed, cur_ra, cur_tug_speed, cur_obs_speed):
     rospy.set_param("/obstacles/ship2/LOSNode/u_d", cur_obs_speed)
 
 
+def calculate_distance(fpos, spos):
+    return distance.euclidean(fpos, spos)
 
-main_positions = []
-obs1_positions = []
-obs2_positions = []
+main_position = (0, 0, 0)
+obs1_position = (sys.maxsize, sys.maxsize, sys.maxsize)
+obs2_position = (sys.maxsize, sys.maxsize, sys.maxsize)
+
+min_obs1_distance = sys.maxsize
+min_obs2_distance = sys.maxsize
+
+def reset_global_values():
+    global main_position
+    global obs1_position
+    global obs2_position
+
+    global min_obs1_distance
+    global min_obs2_distance
+
+    main_position = (0, 0, 0)
+    obs1_position = (sys.maxsize, sys.maxsize, sys.maxsize)
+    obs2_position = (sys.maxsize, sys.maxsize, sys.maxsize)
+
+    min_obs1_distance = sys.maxsize
+    min_obs2_distance = sys.maxsize
 
 def main_pos_callback(data):
-    main_positions.append((data.pose.position.x, data.pose.position.y, data.pose.position.z))
+    global min_obs1_distance
+    global min_obs2_distance
 
-def obs1_pos_callback(data):
-    obs1_positions.append((data.pose.position.x, data.pose.position.y, data.pose.position.z))
+    main_position = (data.pose.position.x, data.pose.position.y, data.pose.position.z)
+
+    actual_obs1_dist = calculate_distance(main_position, obs1_position)
+    if (actual_obs1_dist < min_obs1_distance):
+        min_obs1_distance = actual_obs1_dist
+
+    actual_obs2_dist = calculate_distance(main_position, obs2_position)
+    if (actual_obs2_dist < min_obs2_distance):
+        min_obs2_distance = actual_obs2_dist
+
+def obs1_min_callback(data):
+    global min_obs1_distance
+
+    obs1_position = (data.pose.position.x, data.pose.position.y, data.pose.position.z)
+
+    actual_obs1_dist = calculate_distance(main_position, obs1_position)
+    if (actual_obs1_dist < min_obs1_distance):
+        min_obs1_distance = actual_obs1_dist
+
 
 def obs2_pos_callback(data):
-    obs2_positions.append((data.pose.position.x, data.pose.position.y, data.pose.position.z))
+    global min_obs2_distance
 
-def calculate_distances(fpos, spos):
-    return list(map(distance.euclidean, fpos, spos))
+    obs2_position = (data.pose.position.x, data.pose.position.y, data.pose.position.z)
+
+    actual_obs2_dist = calculate_distance(main_position, obs2_position)
+    if (actual_obs2_dist < min_obs2_distance):
+        min_obs2_distance = actual_obs2_dist
 
 def subscribe_to_pos():
     # Subscribe to positions
 
     rospy.init_node("position_listener", anonymous=True)
     rospy.Subscriber("/asv/pose", PoseStamped, main_pos_callback)
-    rospy.Subscriber("/obstacles/ship1/pose", PoseStamped, obs1_pos_callback)
+    rospy.Subscriber("/obstacles/ship1/pose", PoseStamped, obs1_min_callback)
     rospy.Subscriber("/obstacles/ship2/pose", PoseStamped, obs2_pos_callback)
 
     # rospy.spin()
@@ -93,6 +135,10 @@ def resize(f_arr, s_arr):
         return (f_arr, s_arr[s_len - f_len:])
 
 if __name__== "__main__":
+    mins_obs1 = []
+    mins_obs2 = []
+    time = 10
+
     for cur_speed in s_params["cur_speed"]:
         for cur_ra in s_params["ra"]:
             for cur_tug_speed in s_params["tug_speed"]:
@@ -104,23 +150,19 @@ if __name__== "__main__":
                     start = rospy.Time.now()
 
                     while not rospy.is_shutdown():
-                        end = rospy.Time.now() - start > rospy.Duration.from_sec(10)
+                        end = rospy.Time.now() - start > rospy.Duration.from_sec(time)
                         if end:
                             child.send_signal(signal.SIGINT)
                             child.terminate()
                             break
 
-                    (f_res, s_res) = resize(main_positions, obs1_positions)
-                    min_obs1 = min(calculate_distances(f_res, s_res))
+                    mins_obs1.append(min_obs1_distance)
+                    mins_obs2.append(min_obs2_distance)
 
-                    (f_res, s_res) = resize(main_positions, obs2_positions)
-                    min_obs2 = min(calculate_distances(f_res, s_res))
-
-                    print("Minimum distance Obs1: " + str(min_obs1))
-                    print("Minimum distance Obs2: " + str(min_obs2))
+                    reset_global_values()
 
                     break
                 break
-
             break
         break
+
