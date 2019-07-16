@@ -1,5 +1,5 @@
-u_d: 3.0
-acceptance_radius: 50 
+# u_d: 3.0
+# acceptance_radius: 50
 update_rate: .2
 lookahead_distance: 40.0
 integral_gain: 0.0
