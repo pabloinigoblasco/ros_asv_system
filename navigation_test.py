@@ -80,29 +80,44 @@ def subscribe_to_pos():
     rospy.Subscriber("/asv/pose", PoseStamped, main_pos_callback)
     rospy.Subscriber("/obstacles/ship1/pose", PoseStamped, obs1_pos_callback)
     rospy.Subscriber("/obstacles/ship2/pose", PoseStamped, obs2_pos_callback)
+
     # rospy.spin()
+
+def resize(f_arr, s_arr):
+    f_len = len(f_arr)
+    s_len = len(s_arr)
+
+    if f_len > s_len:
+        return (f_arr[f_len - s_len:], s_arr)
+    else:
+        return (f_arr, s_arr[s_len - f_len:])
 
 if __name__== "__main__":
     for cur_speed in s_params["cur_speed"]:
         for cur_ra in s_params["ra"]:
             for cur_tug_speed in s_params["tug_speed"]:
                 for cur_obs_speed in s_params["obs_speed"]:
-                    child = launch_simulation()
-                    # set_cur_params(cur_speed, cur_ra, cur_tug_speed, cur_obs_speed)
+                    set_cur_params(cur_speed, cur_ra, cur_tug_speed, cur_obs_speed)
                     subscribe_to_pos()
+                    child = launch_simulation()
 
-                    rospy.sleep(15)
+                    start = rospy.Time.now()
 
-                    min_obs1 = min(calculate_distances(main_positions, obs1_positions))
-                    min_obs2 = min(calculate_distances(main_positions, obs2_positions))
+                    while not rospy.is_shutdown():
+                        end = rospy.Time.now() - start > rospy.Duration.from_sec(10)
+                        if end:
+                            child.send_signal(signal.SIGINT)
+                            child.terminate()
+                            break
+
+                    (f_res, s_res) = resize(main_positions, obs1_positions)
+                    min_obs1 = min(calculate_distances(f_res, s_res))
+
+                    (f_res, s_res) = resize(main_positions, obs2_positions)
+                    min_obs2 = min(calculate_distances(f_res, s_res))
 
                     print("Minimum distance Obs1: " + str(min_obs1))
                     print("Minimum distance Obs2: " + str(min_obs2))
-
-                    # child.wait()
-
-                    child.send_signal(signal.SIGINT) #You may also use .terminate() method
-                    child.terminate()
 
                     break
                 break
