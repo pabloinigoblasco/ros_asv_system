@@ -44,3 +44,17 @@ child.send_signal(signal.SIGINT) #You may also use .terminate() method
 #child.terminate()
 
 #for more: https://docs.python.org/2/library/subprocess.html
+
+
+if __name__== "__main__":
+
+    for cur_speed_value in s_params["cur_speed"]:
+        rospy.set_param("/asv/asv/Vx_current", cur_speed_value)
+        rospy.set_param("/obstacles/ship1/ship1/Vx_current", cur_speed_value)
+        rospy.set_param("/obstacles/ship1/ship1/Vx_current", cur_speed_value)
+        for cur_speed_value in s_params["ra"]:
+            for tug_speed_value in s_params["tug_speed"]:
+                rospy.set_param("/asv/LOSNode/u_d", tug_speed_value)
+                for obs_speed_value in s_params["obs_speed"]:
+                    pass
+                    #launch_simulation(params)
