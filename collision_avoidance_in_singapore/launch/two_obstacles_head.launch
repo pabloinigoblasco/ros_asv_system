@@ -44,9 +44,9 @@
         name="rviz"
         args="-d $(find collision_avoidance_in_singapore)/config/rviz/two_ships.rviz" />
 
-  <node pkg="rosbag"
+  <!-- <node pkg="rosbag"
         type="record"
         name="rosbag_record"
         args="-O /home/ingerbha/ros_records/bagfiles/head_on.bag /asv/state /obstacles/ship1/state /obstacle_states"
-        />
+        /> -->
 </launch>
