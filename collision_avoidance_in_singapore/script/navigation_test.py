@@ -79,6 +79,9 @@ obs2_position = (sys.maxsize, sys.maxsize, sys.maxsize)
 min_obs1_distance = sys.maxsize
 min_obs2_distance = sys.maxsize
 
+current_obs1_distance = sys.maxsize
+current_obs2_distance = sys.maxsize
+
 last_obs1_pose = None
 last_obs2_pose = None
 
@@ -94,6 +97,8 @@ goal_dist = 0
 Convenience function to clean global state during iterations.
 """
 def reset_global_values():
+    global current_obs1_distance
+    global current_obs2_distance
     global main_position
     global obs1_position
     global obs2_position
@@ -116,6 +121,9 @@ def reset_global_values():
     min_obs1_distance = sys.maxsize
     min_obs2_distance = sys.maxsize
 
+    current_obs1_distance = sys.maxsize
+    current_obs2_distance = sys.maxsize
+
     last_obs1_pose = None
     last_obs2_pose = None
 
@@ -130,6 +138,8 @@ Callback that recomputes the new minimum distance values of the main ship with o
 obs2 each time that main ship position changes.
 """
 def main_pos_callback(data):
+    global current_obs1_distance
+    global current_obs2_distance
     global min_obs1_distance
     global min_obs2_distance
     global last_obs1_pose
@@ -138,6 +148,8 @@ def main_pos_callback(data):
     global overtake_right_2
     global goal_reached
     global goal_dist
+    global obs2_position
+    global obs1_position
 
     main_position = (data.pose.position.x, data.pose.position.y, data.pose.position.z)
 
@@ -150,20 +162,20 @@ def main_pos_callback(data):
         min_obs2_distance = actual_obs2_dist
 
     #on overtake edge 1 - only happens once
-    if not last_obs1_pose is  None and overtake_right_1 is None and  last_obs1_pose.pose.position.x < data.pose.position.x:
-        if data.pose.position.y > last_obs1_pose.pose.position.y:
+    if overtake_right_1 is None and not last_obs1_pose is  None and data.pose.position.y > last_obs1_pose.pose.position.y:
+        if data.pose.position.x > last_obs1_pose.pose.position.x:
             overtake_right_1 = True
         else:
             overtake_right_1 = False
 
-    #on overtake edge 1 - only happens once
-    if  not last_obs2_pose is None and overtake_right_2 is None and  last_obs2_pose.pose.position.x < data.pose.position.x:
-        if data.pose.position.y > last_obs2_pose.pose.position.y:
+    #on overtake edge 2 - only happens once
+    if  overtake_right_2 is None and not last_obs2_pose is None and data.pose.position.y > last_obs2_pose.pose.position.y:
+        if data.pose.position.x > last_obs2_pose.pose.position.x:
             overtake_right_2 = True
         else:
             overtake_right_2 = False
 
-    if goal_position is not None:
+    if not goal_position is None:
        goal_dist = calculate_distance(goal_position, main_position[0:2]) 
        if goal_dist < Ra*2:
            goal_reached = True
@@ -175,6 +187,7 @@ that obs1 position changes.
 def obs1_min_callback(data):
     global min_obs1_distance
     global last_obs1_pose
+    global obs1_position
     
     last_obs1_pose = data
     obs1_position = (data.pose.position.x, data.pose.position.y, data.pose.position.z)
@@ -182,6 +195,8 @@ def obs1_min_callback(data):
     actual_obs1_dist = calculate_distance(main_position, obs1_position)
     if (actual_obs1_dist < min_obs1_distance):
         min_obs1_distance = actual_obs1_dist
+
+    rospy.logwarn_throttle(1, "obs1 callback")
 
 
 """
@@ -191,6 +206,7 @@ that obs2 position changes.
 def obs2_pos_callback(data):
     global min_obs2_distance
     global last_obs2_pose
+    global obs2_position
 
     last_obs2_pose = data
     obs2_position = (data.pose.position.x, data.pose.position.y, data.pose.position.z)
@@ -198,6 +214,9 @@ def obs2_pos_callback(data):
     actual_obs2_dist = calculate_distance(main_position, obs2_position)
     if (actual_obs2_dist < min_obs2_distance):
         min_obs2_distance = actual_obs2_dist
+    
+    
+    rospy.logwarn_throttle(1, "obs1 callback2")
 
 """
 Function that encapsulate the subscriptions to movement topics.
@@ -216,17 +235,15 @@ def subscribe_to_pos():
 if __name__== "__main__":
     rospy.init_node("position_listener", anonymous=True)
 
-    # Arrays to store the results of all the iterations
-    mins_obs1 = []
-    mins_obs2 = []
     # Sample time to check if the computation of the iterations is being done properly
-    timeout = 400
-    timeout_after_overtake = 5
+    timeout = 450
+    timeout_after_overtake = 8
     # File to store the results
     csv_filename = "results.csv"
 
     i = 0 
     rospy.sleep(5)
+    skip_count = 292
     for cur_speed in s_params["cur_speed"]:
         for cur_ra in s_params["ra"]:
             Ra = cur_ra
@@ -236,54 +253,66 @@ if __name__== "__main__":
                         break
 
                     rospy.logwarn("SIMULATION {i} curr_speed: {cur_speed}, ra: {cur_ra}, tug_speed: {cur_tug_speed}, obs_speed: {cur_obs_speed})".format(**locals()))
-                    rospy.sleep(2)
+                    i+=1             
+                    if i < skip_count:
+                        continue
+
+                    rospy.sleep(5)
 
                     # Initialization of the currrent iteration
                     set_cur_params(cur_speed, cur_ra, cur_tug_speed, cur_obs_speed)
                     (ml, obs1_l, obs2_l) = subscribe_to_pos()
                     child, child_screen_record = launch_simulation(i)
 
+                    rospy.sleep(2)
                     goal_position = rospy.get_param("/asv/LOSNode/waypoints")[-1]
 
                     # Section to be replace with a proper ending condition
                     start = rospy.Time.now()
                     overtaketime = None
                     while not rospy.is_shutdown():
+                        
+                        # end if timeout
                         ellapsed = rospy.Time.now() - start
                         end = ellapsed > rospy.Duration.from_sec(timeout)
+                        
                         rospy.loginfo("simulation ellapsed : " + str(ellapsed.to_sec())+ ", goal dist: "+ str(goal_dist)+ " Ra: "+str(Ra))
-
-                        if not overtake_right_1 is None and not overtake_right_2 is None:
-                            overtaketime = rospy.Time.now()
                             
+                        # end if passed too much time after overtaking
+                        if overtaketime is None and not overtake_right_1 is None and not overtake_right_2 is None:
+                            overtaketime = rospy.Time.now()
+
                         if not overtaketime is None:
-                            end = end or overtaketime - rospy.Time.now() > rospy.Duration.from_sec(timeout_after_overtake)
+                            ellapsed_from_overtake = rospy.Time.now() - overtaketime
+                            rospy.loginfo("ellapsed from overtake: "+ str(ellapsed_from_overtake.to_sec()))
+                            end_overtake =  ellapsed_from_overtake > rospy.Duration.from_sec(timeout_after_overtake)
+                            end = end or end_overtake
 
                         if end or goal_reached:
-                            child.send_signal(signal.SIGINT)
-                            child_screen_record.send_signal(signal.SIGINT)
-                            child.terminate()
-                            child_screen_record.terminate()
+                            try:
+                                child.send_signal(signal.SIGINT)
+                                child.send_signal(signal.SIGINT)
+                            except:
+                                pass
+                            try:
+                                child_screen_record.send_signal(signal.SIGINT)
+                                child_screen_record.send_signal(signal.SIGINT)
+                            except:
+                                pass
+                            try:
+                                child.terminate()
+                                child.terminate()
+                            except:
+                                pass
+                            try:
+                                child_screen_record.terminate()
+                                child_screen_record.terminate()
+                            except:
+                                pass
+
                             break
 
-                        rospy.sleep(1)
-
-                    # Store the results of this iteration
-                    mins_obs1.append(min_obs1_distance)
-                    mins_obs2.append(min_obs2_distance)
-
-                    # Write the header only if the file have been created by the first time
-                    file_exists = os.path.isfile(csv_filename)
-
-                    with open(csv_filename, mode='a') as csv_file:
-                        fieldnames = ["simulation_id", "cur_speed", "ra", "tug_speed", "obs_speed", "min_obstacle_distance_1", "min_obstacle_distance_2", "min_obstacle_distance", "overtake_right_1", "overtake_right_2", "sim_duration"]
-                        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-
-                        if not file_exists:
-                            writer.writeheader()
-
-                        writer.writerow(
-                            { 
+                        result = { 
                               'simulation_id': i,
                               'cur_speed': cur_speed,
                               'ra': cur_ra,
@@ -296,12 +325,31 @@ if __name__== "__main__":
                               'overtake_right_2': overtake_right_2,
                               "sim_duration": (rospy.Time.now() - start).to_sec()
                             }
+
+                        rospy.loginfo("current result : " + str(result))
+
+                        rospy.sleep(1)
+
+
+
+                    # Write the header only if the file have been created by the first time
+                    file_exists = os.path.isfile(csv_filename)
+
+                    with open(csv_filename, mode='a') as csv_file:
+                        fieldnames = ["simulation_id", "cur_speed", "ra", "tug_speed", "obs_speed", "min_obstacle_distance_1", "min_obstacle_distance_2", "min_obstacle_distance", "overtake_right_1", "overtake_right_2", "sim_duration"]
+                        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+                        if not file_exists:
+                            writer.writeheader()
+
+                        writer.writerow(result
                         )
+
+                    rospy.sleep(5)
 
                     # Cleaning iteration values
                     reset_global_values()
                     ml.unregister()
                     obs1_l.unregister()
                     obs2_l.unregister()
-                    i+=1
 
