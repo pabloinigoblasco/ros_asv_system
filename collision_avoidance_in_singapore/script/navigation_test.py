@@ -244,6 +244,13 @@ if __name__== "__main__":
     i = 0 
     rospy.sleep(5)
     skip_count = 292
+    # We use the same instance of ROSCore during all the simulation, there is no
+    # need to subscribe again in each iteration.
+    #
+    # WIP: Unregistering may have been the cause of subscribers not receiving topics
+    # messages properly.
+    (ml, obs1_l, obs2_l) = subscribe_to_pos()
+
     for cur_speed in s_params["cur_speed"]:
         for cur_ra in s_params["ra"]:
             Ra = cur_ra
@@ -261,7 +268,6 @@ if __name__== "__main__":
 
                     # Initialization of the currrent iteration
                     set_cur_params(cur_speed, cur_ra, cur_tug_speed, cur_obs_speed)
-                    (ml, obs1_l, obs2_l) = subscribe_to_pos()
                     child, child_screen_record = launch_simulation(i)
 
                     rospy.sleep(2)
@@ -349,7 +355,3 @@ if __name__== "__main__":
 
                     # Cleaning iteration values
                     reset_global_values()
-                    ml.unregister()
-                    obs1_l.unregister()
-                    obs2_l.unregister()
-
