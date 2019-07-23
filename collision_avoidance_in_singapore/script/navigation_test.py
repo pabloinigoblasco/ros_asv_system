@@ -19,8 +19,9 @@ from scipy.spatial import distance
 s_params = {
     "cur_speed": [0.2, 0.4, 0.7, 1.2, 1.4],
     "ra": [10, 20, 30, 40, 50],
-    "tug_speed": [1.0, 3.0, 4.0, 5.0, 7.0],
-    "obs_speed": [0, 2.0, 3.0, 4.0, 6.0]
+    "tug_speed": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0],
+    "obs_speed": [0, 2.0, 3.0, 4.0, 6.0],
+    "one_obs": False
 }
 
 """
@@ -232,6 +233,16 @@ def subscribe_to_pos():
 
     return (pos_listener, obs1_listener, obs2_listener)
 
+"""
+Check overtime timer start depending on the number of obstacles
+"""
+def check_overtaketime(one_obs, overtake_right_1, overtake_right_2):
+    if one_obs:
+        return not overtake_right_1 is None or not overtake_right_2 is None
+    else:
+        return not overtake_right_1 is None and not overtake_right_2 is None
+
+
 if __name__== "__main__":
     rospy.init_node("position_listener", anonymous=True)
 
@@ -243,7 +254,14 @@ if __name__== "__main__":
 
     i = 0 
     rospy.sleep(5)
-    skip_count = 292
+    skip_count = 0
+    # We use the same instance of ROSCore during all the simulation, there is no
+    # need to subscribe again in each iteration.
+    #
+    # WIP: Unregistering may have been the cause of subscribers not receiving topics
+    # messages properly.
+    (ml, obs1_l, obs2_l) = subscribe_to_pos()
+
     for cur_speed in s_params["cur_speed"]:
         for cur_ra in s_params["ra"]:
             Ra = cur_ra
@@ -261,7 +279,6 @@ if __name__== "__main__":
 
                     # Initialization of the currrent iteration
                     set_cur_params(cur_speed, cur_ra, cur_tug_speed, cur_obs_speed)
-                    (ml, obs1_l, obs2_l) = subscribe_to_pos()
                     child, child_screen_record = launch_simulation(i)
 
                     rospy.sleep(2)
@@ -271,15 +288,15 @@ if __name__== "__main__":
                     start = rospy.Time.now()
                     overtaketime = None
                     while not rospy.is_shutdown():
-                        
+
                         # end if timeout
                         ellapsed = rospy.Time.now() - start
                         end = ellapsed > rospy.Duration.from_sec(timeout)
-                        
+
                         rospy.loginfo("simulation ellapsed : " + str(ellapsed.to_sec())+ ", goal dist: "+ str(goal_dist)+ " Ra: "+str(Ra))
-                            
+
                         # end if passed too much time after overtaking
-                        if overtaketime is None and not overtake_right_1 is None and not overtake_right_2 is None:
+                        if overtaketime is None and check_overtaketime(s_params["one_obs"], overtake_right_1, overtake_right_2):
                             overtaketime = rospy.Time.now()
 
                         if not overtaketime is None:
@@ -349,7 +366,3 @@ if __name__== "__main__":
 
                     # Cleaning iteration values
                     reset_global_values()
-                    ml.unregister()
-                    obs1_l.unregister()
-                    obs2_l.unregister()
-

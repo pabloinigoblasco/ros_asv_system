@@ -1,8 +1,11 @@
 ﻿# Parameters for Viknes 830 based on Loe, 2008.
+# ratio ship = 550000/3980 = 138,190954774
+
 radius: 10.0 # m (In reality 4.15 m)
 
-mass: 55000000.0 # kg
+mass: 550000.0 # kg
 inertia: 19703.0 # kg/m2
+
 
 # Added mass terms
 X_udot: 0.0
@@ -12,19 +15,34 @@ N_vdot: 0.0
 N_rdot: 0.0
 
 # Linear damping terms [X_u, Y_v, Y_r, N_v, N_r]
-X_u: -50.0
-Y_v: -200.0
+#X_u: -50.0
+#Y_v: -200.0
+#Y_r: 0.0
+#N_v: 0.0
+#N_r: -3224.0
+
+# Linear damping terms [X_u, Y_v, Y_r, N_v, N_r]
+X_u: -6909.5477387 # -50.0 * ratio_ship
+Y_v:  -27638.1909548 #-200.0  * ratio_ship
 Y_r: 0.0
 N_v: 0.0
-N_r: -3224.0
+N_r: -445527.638191376 # -3224.0 * ratio_ship
 
 # Nonlinear damping terms [X_|u|u, Y_|v|v, N_|r|r, X_uuu, Y_vvv, N_rrr]
-X_uu:   -135.0
-Y_vv:  -2000.0
-N_rr:      0.0
-X_uuu:     0.0
-Y_vvv:     0.0
-N_rrr: -3224.0
+#X_uu:   -135.0
+#Y_vv:  -2000.0
+#N_rr:      0.0
+#X_uuu:     0.0
+#Y_vvv:     0.0
+#N_rrr: -3224.0
+
+X_uu:   -18655.77 # -135 * ratio_ship
+Y_vv:  -276381.90 # -200 * ratio_ship
+N_rr:      0.0 #* ratio_ship
+X_uuu:     0.0 #* ratio_ship
+Y_vvv:     0.0 #* ratio_ship
+N_rrr: -445527.63 # -3224.0 * ratio_ship
+
 
 # Force limits
 Fx_min: -6550.0

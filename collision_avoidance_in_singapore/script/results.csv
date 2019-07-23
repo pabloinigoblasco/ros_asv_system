@@ -1,0 +1,3 @@
+simulation_id,cur_speed,ra,tug_speed,obs_speed,min_obstacle_distance_1,min_obstacle_distance_2,min_obstacle_distance,overtake_right_1,overtake_right_2,sim_duration
+1,0.2,10,1.0,0,287.25874188225526,442.5760770860679,287.25874188225526,,,26.052772045
+1,0.2,10,1.0,0,283.5240604761144,438.86514268165007,283.5240604761144,,,34.079841137
