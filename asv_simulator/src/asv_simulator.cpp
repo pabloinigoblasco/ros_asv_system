@@ -212,6 +212,7 @@ void Vessel::updateSystem(double u_d, double psi_d, double r_d)
               (N_rr*fabs(nu[2])*nu[2] + N_rrr*nu[2]*nu[2]*nu[2]));
 
   this->updateControlInput(u_d, psi_d, r_d);
+  
 
   Eigen::Vector3d tau_const_disturbance(Fx_current, Fy_current, 0.0);
   tau_const_disturbance = rot_z.inverse()*tau_const_disturbance;
@@ -223,6 +224,9 @@ void Vessel::updateSystem(double u_d, double psi_d, double r_d)
   // Integrate system
   eta += DT * (rot_z * nu + Eigen::Vector3d(Vx_current, Vy_current, 0));
   nu  += DT * (Minv * (tau + tau_const_disturbance + tau_waves - Cvv - Dvv));
+
+  ROS_INFO_THROTTLE(1 , "[boat id %ld] ud: %lf, eta: %lf, nu: %lf", (long)this, u_d, eta[0], nu[0]);
+
 
   // Keep yaw within [-PI,PI)
   eta[2] = normalize_angle(eta[2]);

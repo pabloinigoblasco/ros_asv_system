@@ -265,6 +265,9 @@ if __name__ == "__main__":
 
     waypoints = rospy.get_param("~waypoints")
     u_d = rospy.get_param("~u_d", 2.0)
+
+    rospy.logerr("U_D: "+ str(u_d))
+    
     R2 = rospy.get_param("~acceptance_radius", 20)**2
     dt = rospy.get_param("~update_rate", .2)
     de = rospy.get_param("~lookahead_distance", 40.0)
