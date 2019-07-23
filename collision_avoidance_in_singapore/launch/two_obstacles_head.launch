@@ -22,7 +22,9 @@
     <arg name="initial_state" value="[0.0, 300.0, -1.57, 0.,0.,0.]" />
   </include>
 
+  
   <!-- Obstacle ship 2 -->
+  <!--
   <include file="$(find collision_avoidance_in_singapore)/launch/default_ship.launch">
     <arg name="waypoint_file" value="$(find collision_avoidance_in_singapore)/config/waypoints/crossed_north_to_south.yaml" />
     <arg name="vessel_param_file" value="$(find collision_avoidance_in_singapore)/config/vessel_punitha.yaml"/>
@@ -36,6 +38,7 @@
     <arg name="shipname" value="ship2" />
     <arg name="initial_state" value="[70.0, 450.0, -1.57, 0.,0.,0.]" />
   </include>
+  -->
 
   <include file="$(find asv_obstacle_tracker)/launch/default.launch"/>
 
