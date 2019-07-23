@@ -1,6 +1,4 @@
 ﻿# Parameters for Viknes 830 based on Loe, 2008.
-# ratio tug = 333000/3980 = 83.668341709
-
 
 radius: 15.0 # m (In reality 12 m)
 
@@ -15,32 +13,19 @@ N_vdot: 0.0
 N_rdot: 0.0
 
 # Linear damping terms [X_u, Y_v, Y_r, N_v, N_r]
-#X_u: -50.0
-#Y_v: -200.0
-#Y_r: 0.0
-#N_v: 0.0
-#N_r: -3224.0
-
-X_u: -4183.41708545 #-50.0 * ratio_tug
-Y_v: -16733.6683418 # -200.0 * ratio_tug
+X_u: -50.0
+Y_v: -200.0
 Y_r: 0.0
 N_v: 0.0
-N_r: -269746.733669816 #-3224.0 * ratio_tug
+N_r: -3224.0
 
 # Nonlinear damping terms [X_|u|u, Y_|v|v, N_|r|r, X_uuu, Y_vvv, N_rrr]
-#X_uu:   -135.0
-#Y_vv:  -2000.0
-#N_rr:      0.0
-#X_uuu:     0.0
-#Y_vvv:     0.0
-#N_rrr: -3224.0
-
-X_uu:   -11295.226130715 # -135.0 * ratio_tug
-Y_vv:   -167336.683418 # -2000.0 * ratio_tug
+X_uu:   -135.0
+Y_vv:  -2000.0
 N_rr:      0.0
 X_uuu:     0.0
 Y_vvv:     0.0
-N_rrr:  -269746.733669816 # -3224.0  * ratio_tug
+N_rrr: -3224.0
 
 # Force limits
 Fx_min: -6550.0

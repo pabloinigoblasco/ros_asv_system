@@ -243,7 +243,7 @@ if __name__== "__main__":
 
     i = 0 
     rospy.sleep(5)
-    skip_count = 292
+    skip_count = 0
     # We use the same instance of ROSCore during all the simulation, there is no
     # need to subscribe again in each iteration.
     #
