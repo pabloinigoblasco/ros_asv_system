@@ -4,7 +4,7 @@
 radius: 10.0 # m (In reality 4.15 m)
 
 mass: 550000.0 # kg
-inertia: 19703.0 # kg/m2
+inertia: 2722776.381912122 # 19703.0 # kg/m2 *ratio_ship
 
 
 # Added mass terms
@@ -45,11 +45,16 @@ N_rrr: -445527.63 # -3224.0 * ratio_ship
 
 
 # Force limits
-Fx_min: -6550.0
-Fx_max: 13100.0
-Fy_min:  -645.0
-Fy_max:   645.0
+#Fx_min: -6550.0
+#Fx_max: 13100.0
+#Fy_min:  -645.0
+#Fy_max:   645.0
 
+# Force limits
+Fx_min: -905150.7537697 # -6550.0 * ratio_ship
+Fx_max: 1810301.5075394 # 13100.0 * ratio_ship
+Fy_min:  -89133.16582923 # -645.0 * ratio_ship
+Fy_max:  89133.16582923 #  645.0 * ratio_ship
 
 # Control parameters
 Kp_u: 0.1

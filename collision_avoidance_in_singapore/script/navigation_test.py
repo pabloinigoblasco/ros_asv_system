@@ -17,10 +17,10 @@ from scipy.spatial import distance
 # Launch a new simulation
 
 s_params = {
-    "cur_speed": [0.2, 0.4, 0.7, 1.2, 1.4],
-    "ra": [10, 20, 30, 40, 50],
-    "tug_speed": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0],
-    "obs_speed": [0, 2.0, 3.0, 4.0, 6.0],
+    "cur_speed": [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4],
+    "ra": [10, 20, 30, 40, 50, 60, 70],
+    "obs_speed": [0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+    "tug_speed": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
     "one_obs": False
 }
 
