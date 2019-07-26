@@ -21,7 +21,7 @@ s_params = {
     "ra": [10, 20, 30, 40, 50, 60, 70],
     "obs_speed": [0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
     "tug_speed": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
-    "one_obs": False
+    "one_obs": True
 }
 
 """
@@ -55,8 +55,9 @@ def set_cur_params(cur_speed, cur_ra, cur_tug_speed, cur_obs_speed):
     rospy.set_param("/obstacles/ship2/ship2/Vx_current", cur_speed)
 
     # Setting acceptance radius
-    rospy.set_param("/obstacles/ship1/LOSNode/acceptance_radius", cur_ra)
-    rospy.set_param("/obstacles/ship2/LOSNode/acceptance_radius", cur_ra)
+    rospy.set_param("/asv/LOSNode/acceptance_radius", cur_ra)
+    #rospy.set_param("/obstacles/ship1/LOSNode/acceptance_radius", cur_ra)
+    #rospy.set_param("/obstacles/ship2/LOSNode/acceptance_radius", cur_ra)
 
     # Setting tug speed
     rospy.set_param("/asv/LOSNode/u_d", cur_tug_speed)
@@ -157,6 +158,7 @@ def main_pos_callback(data):
     actual_obs1_dist = calculate_distance(main_position, obs1_position)
     if (actual_obs1_dist < min_obs1_distance):
         min_obs1_distance = actual_obs1_dist
+        rospy.logwarn("Min distance obs1 update: "+ str(min_obs1_distance))
 
     actual_obs2_dist = calculate_distance(main_position, obs2_position)
     if (actual_obs2_dist < min_obs2_distance):
@@ -254,7 +256,7 @@ if __name__== "__main__":
 
     i = 0 
     rospy.sleep(5)
-    skip_count = 0
+    skip_count = 69
     # We use the same instance of ROSCore during all the simulation, there is no
     # need to subscribe again in each iteration.
     #
