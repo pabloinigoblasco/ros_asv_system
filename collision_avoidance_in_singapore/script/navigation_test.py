@@ -17,10 +17,15 @@ from scipy.spatial import distance
 # Launch a new simulation
 
 s_params = {
-    "cur_speed": [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4],
-    "ra": [10, 20, 30, 40, 50, 60, 70],
-    "obs_speed": [0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
-    "tug_speed": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
+    #"cur_speed": [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4],
+    #"ra": [10, 20, 30, 40, 50, 60, 70],
+    #"obs_speed": [0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+    #"tug_speed": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
+    "cur_speed": [0.2,0.8,1.4],
+    "ra": [10, 40,70],
+    "obs_speed": [0,3.0,6.0],
+    "tug_speed": [1.0,4,0,7.0],
+
     "one_obs": True
 }
 
@@ -152,13 +157,14 @@ def main_pos_callback(data):
     global goal_dist
     global obs2_position
     global obs1_position
+    global main_position
 
     main_position = (data.pose.position.x, data.pose.position.y, data.pose.position.z)
 
     actual_obs1_dist = calculate_distance(main_position, obs1_position)
     if (actual_obs1_dist < min_obs1_distance):
         min_obs1_distance = actual_obs1_dist
-        rospy.logwarn("Min distance obs1 update: "+ str(min_obs1_distance))
+        #rospy.logwarn("Min distance obs1 update: "+ str(min_obs1_distance))
 
     actual_obs2_dist = calculate_distance(main_position, obs2_position)
     if (actual_obs2_dist < min_obs2_distance):
@@ -191,15 +197,16 @@ def obs1_min_callback(data):
     global min_obs1_distance
     global last_obs1_pose
     global obs1_position
+    global main_position
     
     last_obs1_pose = data
     obs1_position = (data.pose.position.x, data.pose.position.y, data.pose.position.z)
 
     actual_obs1_dist = calculate_distance(main_position, obs1_position)
-    if (actual_obs1_dist < min_obs1_distance):
+    if actual_obs1_dist < min_obs1_distance:
         min_obs1_distance = actual_obs1_dist
 
-    rospy.logwarn_throttle(1, "obs1 callback")
+    rospy.logwarn_throttle(1, "obs1 callback, min dist: "+  str(min_obs1_distance))
 
 
 """
@@ -210,6 +217,7 @@ def obs2_pos_callback(data):
     global min_obs2_distance
     global last_obs2_pose
     global obs2_position
+    global main_position
 
     last_obs2_pose = data
     obs2_position = (data.pose.position.x, data.pose.position.y, data.pose.position.z)
@@ -256,7 +264,7 @@ if __name__== "__main__":
 
     i = 0 
     rospy.sleep(5)
-    skip_count = 69
+    skip_count = 3
     # We use the same instance of ROSCore during all the simulation, there is no
     # need to subscribe again in each iteration.
     #
