@@ -5,7 +5,7 @@
 radius: 15.0 # m (In reality 12 m)
 
 mass: 333000 # kg
-inertia: 19703.0 # kg/m2
+inertia: 1648517.336692427 # 19703.0 * ratio_tug # kg/m2
 
 # Added mass terms
 X_udot: 0.0
@@ -43,10 +43,16 @@ Y_vvv:     0.0
 N_rrr:  -269746.733669816 # -3224.0  * ratio_tug
 
 # Force limits
-Fx_min: -6550.0
-Fx_max: 13100.0
-Fy_min:  -645.0
-Fy_max:   645.0
+#Fx_min: -6550.0
+#Fx_max: 13100.0
+#Fy_min:  -645.0
+#Fy_max:   645.0
+
+# Force limits
+Fx_min: -548027.63819395 # -6550.0 * ratio_tug
+Fx_max: 1096055.2763879 # 13100.0 * ratio_tug
+Fy_min: -53966.080402305 # -645.0 * ratio_tug
+Fy_max: 53966.080402305 # 645.0 * ratio_tug
 
 
 # Control parameters
