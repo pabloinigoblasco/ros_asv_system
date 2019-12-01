@@ -509,9 +509,10 @@ if __name__ == "__main__":
                             'min_obstacle_distance_2': min_obs2_distance,
                             'min_obstacle_distance': min([min_obs1_distance, min_obs2_distance]),
                             'headon_distance_obstacle_1': headon_distance_metric1_obs1.distance,
-                            'headon_time_obstacle_1': headon_distance_metric1_obs1.time,
+                            'headon_time_obstacle_1': headon_distance_metric1_obs1.time.to_sec(),
                             'headon_distance_obstacle_3': headon_distance_metric3_obs1.distance,
-                            'headon_time_obstacle_3': headon_distance_metric3_obs1.time,
+                            'headon_time_obstacle_3': headon_distance_metric3_obs1.time.to_sec(),
+                            'avoiding_side_1': "right" if overtake_right_1 else "left",
 
                             # 'overtake_right_1': overtake_right_1,
                             # 'overtake_right_2': overtake_right_2,
@@ -538,6 +539,7 @@ if __name__ == "__main__":
                                       "headon_time_obstacle_1",
                                       "headon_distance_obstacle_3",
                                       "headon_time_obstacle_3",
+                                      "avoiding_side_1",
                                       # "overtake_right_1",
                                       # "overtake_right_2",
                                       "sim_duration"]
