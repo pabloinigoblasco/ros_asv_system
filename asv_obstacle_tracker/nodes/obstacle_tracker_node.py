@@ -77,13 +77,14 @@ if __name__ == "__main__":
     num = 0
 
     for ship in ships:
-        statearray.states.append(State())
-        subscriber_list.append(rospy.Subscriber("/obstacles/" + str(ship) + "/state", Odometry, obstacleCallback, num))
-        statearray.states[num].header.id = num
-        statearray.states[num].header.name = str(ship)
-        statearray.states[num].header.radius = ships[str(ship)][str(ship)]['radius']
-        wf.append(WaveFilter(wf_gain))
-        num += 1
+        if 'radius' in ships[str(ship)][str(ship)]:
+            statearray.states.append(State())
+            subscriber_list.append(rospy.Subscriber("/obstacles/" + str(ship) + "/state", Odometry, obstacleCallback, num))
+            statearray.states[num].header.id = num
+            statearray.states[num].header.name = str(ship)
+            statearray.states[num].header.radius = ships[str(ship)][str(ship)]['radius']
+            wf.append(WaveFilter(wf_gain))
+            num += 1
 
     pub = rospy.Publisher("/obstacle_states", StateArray, queue_size=1)
 

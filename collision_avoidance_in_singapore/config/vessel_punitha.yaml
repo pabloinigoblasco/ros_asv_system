@@ -6,7 +6,6 @@ radius: 10.0 # m (In reality 4.15 m)
 mass: 550000.0 # kg
 inertia: 2722776.381912122 # 19703.0 # kg/m2 *ratio_ship
 
-
 # Added mass terms
 X_udot: 0.0
 Y_vdot: 0.0

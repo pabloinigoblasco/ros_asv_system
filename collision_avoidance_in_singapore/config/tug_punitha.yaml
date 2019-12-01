@@ -1,7 +1,5 @@
 ﻿# Parameters for Viknes 830 based on Loe, 2008.
 # ratio tug = 333000/3980 = 83.668341709
-
-
 radius: 15.0 # m (In reality 12 m)
 
 mass: 333000 # kg

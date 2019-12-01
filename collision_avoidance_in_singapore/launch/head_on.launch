@@ -1,7 +1,7 @@
 ﻿<launch>
   <!-- Tug ship -->
   <include file="$(find collision_avoidance_in_singapore)/launch/default_ship.launch">
-    <arg name="waypoint_file" value="$(find asv_simulator)/config/waypoints/south_to_north.yaml" />
+      <arg name="waypoint_file" value="$(find collision_avoidance_in_singapore)/config/waypoints/south_to_north.yaml" />
       <arg name="vessel_param_file" value="$(find collision_avoidance_in_singapore)/config/tug_punitha.yaml"/>
       <arg name="common_param_file" value="$(find collision_avoidance_in_singapore)/config/common.yaml"/>
       <arg name="loss_guidance_file" value="$(find collision_avoidance_in_singapore)/config/tug_punitha_lossguidance.yaml"/>
@@ -9,7 +9,7 @@
 
   <!-- Obstacle ship -->
   <include file="$(find collision_avoidance_in_singapore)/launch/default_ship.launch">
-    <arg name="waypoint_file" value="$(find asv_simulator)/config/waypoints/north_to_south.yaml" />
+    <arg name="waypoint_file" value="$(find collision_avoidance_in_singapore)/config/waypoints/north_to_south.yaml" />
     <arg name="vessel_param_file" value="$(find collision_avoidance_in_singapore)/config/vessel_punitha.yaml"/>
     <arg name="common_param_file" value="$(find collision_avoidance_in_singapore)/config/common.yaml"/>
     <arg name="loss_guidance_file" value="$(find collision_avoidance_in_singapore)/config/vessel_punitha_lossguidance.yaml"/>
@@ -19,7 +19,8 @@
     <arg name="vessel_model_file" value="$(find asv_simulator)/config/models/ship1.urdf" />
     <arg name="namespace" value="obstacles/ship1" />
     <arg name="shipname" value="ship1" />
-    <arg name="initial_state" value="[0.0, 300.0, -1.57, 1.,0.,0.]" />
+    <!-- <arg name="initial_state" value="[0.0, 300.0, -1.57, 1.,0.,0.]" /> -->
+    <arg name="initial_state" value="[0.0, 1000.0, -1.57, 1.,0.,0.]" />
   </include>
 
   <include file="$(find asv_obstacle_tracker)/launch/default.launch"/>
@@ -32,6 +33,6 @@
   <node pkg="rosbag"
         type="record"
         name="rosbag_record"
-        args="-O /home/ingerbha/ros_records/bagfiles/head_on.bag /asv/state /obstacles/ship1/state /obstacle_states"
+        args="-O $(env HOME)/ros_records/bagfiles/head_on.bag /asv/state /obstacles/ship1/state /obstacle_states"
         />
 </launch>

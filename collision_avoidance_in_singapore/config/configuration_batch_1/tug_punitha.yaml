@@ -1,5 +1,4 @@
 ﻿# Parameters for Viknes 830 based on Loe, 2008.
-
 radius: 15.0 # m (In reality 12 m)
 
 mass: 333000 # kg

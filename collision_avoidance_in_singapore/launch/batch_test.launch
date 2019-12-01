@@ -1,0 +1,4 @@
+<launch>
+
+ <node pkg="collision_avoidance_in_singapore" type="navigation_test.py" name="navigation_test" output="screen"/>
+</launch>

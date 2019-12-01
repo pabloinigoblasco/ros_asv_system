@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Grid21/Offset1
+        - /TF1
         - /ASV1
         - /ASV1/Path1
         - /ASV1/Path1/Shape1
@@ -19,7 +20,7 @@ Panels:
         - /Ship21/Ship2Pose1
         - /Ship21/Ship2Pose1/Shape1
       Splitter Ratio: 0.5
-    Tree Height: 843
+    Tree Height: 359
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -115,9 +116,7 @@ Visualization Manager:
           Value: true
         obstacles/ship1:
           Value: true
-        obstacles/ship2:
-          Value: true
-      Marker Scale: 50
+      Marker Scale: 100
       Name: TF
       Show Arrows: false
       Show Axes: true
@@ -127,8 +126,6 @@ Visualization Manager:
           asv:
             {}
           obstacles/ship1:
-            {}
-          obstacles/ship2:
             {}
       Update Interval: 0
       Value: true
@@ -309,11 +306,6 @@ Visualization Manager:
             Expand Link Details: false
             Expand Tree: false
             Link Tree Style: Links in Alphabetic Order
-            obstacles/ship2:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-              Value: true
           Name: Ship2
           Robot Description: obstacles/ship2/robot_description
           TF Prefix: ""
@@ -325,7 +317,7 @@ Visualization Manager:
           Marker Topic: /obstacles/ship2/waypoints
           Name: Ship2Markers
           Namespaces:
-            waypoints: true
+            {}
           Queue Size: 100
           Value: true
         - Angle Tolerance: 0.100000001
@@ -389,16 +381,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 432.848358
+      Distance: 1056.28381
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 11.0377617
-        Y: 18.0960426
-        Z: 3.82277918
+        X: 121.962524
+        Y: 556.986755
+        Z: 175.651093
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
