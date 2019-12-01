@@ -1,6 +1,6 @@
 #u_d: 4.0
 #acceptance_radius: 50 
 update_rate: .2
-lookahead_distance: 40.0
+#lookahead_distance: 40.0
 integral_gain: 0.0
 max_integral_correction: 0

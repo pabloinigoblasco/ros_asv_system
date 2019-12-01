@@ -25,21 +25,29 @@ s_params = {
     # "ra": [10, 20, 30, 40, 50, 60, 70],
     # "obs_speed": [0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
     # "tug_speed": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
+    # "tug_lookahead_distance": [40], # new param in Dec 2019, adding the classical default value
 
-    "cur_speed": [0.2,0.8,1.4],
-    "ra": [10, 40,70],
-    "obs_speed": [0,3.0,6.0],
-    "tug_speed": [1.0,4,7.0],
+    # - parameters combination - July 2019
+    # "cur_speed": [0.2,0.8,1.4],
+    # "ra": [10, 40,70],
+    # "obs_speed": [0,3.0,6.0],
+    # "tug_speed": [1.0,4,7.0],
+    # "cur_speed": [0.2, 0.8, 1.4],
+    # "tug_lookahead_distance": [40], # new param in Dec 2019, adding the classical default value
+
+    # - parameters combination - 29 Nov 2019
+    "ra": [100, 150, 200],
+    "tug_speed": [1.0, 4, 7.0],
+    "obs_speed": [0, 3.0, 6.0],
     "cur_speed": [0.2, 0.8, 1.4],
+    "tug_lookahead_distance": [100, 500, 1000],
 
-    # "cur_speed": [0.0],
-    # "ra": [10],
-    # "obs_speed": [3.0],
-    # "tug_speed": [7.0],
+
 
     "one_obs": True
 }
 
+skip_count = 0
 main_position = (0, 0, 0)
 obs1_position = (sys.maxsize, sys.maxsize, sys.maxsize)
 obs2_position = (sys.maxsize, sys.maxsize, sys.maxsize)
@@ -98,6 +106,12 @@ class HeadOnDistanceMetric1:
                 self.time = ellapsed
                 rospy.logerr("metric1 TRIGGERs")
 
+    def get_seconds(self):
+        if self.time is None:
+            return None
+        else:
+            return self.time.to_sec()
+
 
 class HeadOnDistanceMetric3:
     """
@@ -138,6 +152,12 @@ class HeadOnDistanceMetric3:
                 self.time = ellapsed
                 rospy.logerr("metric3 TRIGGERs")
 
+    def get_seconds(self):
+        if self.time is None:
+            return None
+        else:
+            return self.time.to_sec()
+
 
 def launch_simulation(simulation_id):
     """
@@ -165,7 +185,7 @@ def launch_simulation(simulation_id):
     return child, child_screen_record
 
 
-def set_cur_params(cur_speed, cur_ra, cur_tug_speed, cur_obs_speed):
+def set_cur_params(cur_speed, cur_ra, cur_tug_speed, cur_obs_speed, tug_look_ahead_distance):
     """
     Helper function to set current parameters to be used during one iteration.
     """
@@ -185,6 +205,8 @@ def set_cur_params(cur_speed, cur_ra, cur_tug_speed, cur_obs_speed):
     # Setting obs speed
     rospy.set_param("/obstacles/ship1/LOSNode/u_d", cur_obs_speed)
     rospy.set_param("/obstacles/ship2/LOSNode/u_d", cur_obs_speed)
+
+    rospy.set_param("/asv/LOSNode/lookahead_distance", tug_look_ahead_distance)
 
 
 def calculate_distance_pose(pose1, pose2):
@@ -405,7 +427,6 @@ if __name__ == "__main__":
 
     i = 0
     rospy.sleep(5)
-    skip_count = 6
     # We use the same instance of ROSCore during all the simulation, there is no
     # need to subscribe again in each iteration.
     #
@@ -418,141 +439,152 @@ if __name__ == "__main__":
             Ra = cur_ra
             for cur_tug_speed in s_params["tug_speed"]:
                 for cur_obs_speed in s_params["obs_speed"]:
-                    if rospy.is_shutdown():
-                        break
-
-                    rospy.logwarn(
-                        "SIMULATION {i} curr_speed: {cur_speed}, ra: {cur_ra}, tug_speed: {cur_tug_speed}, obs_speed: {cur_obs_speed})".format(**locals()))
-                    i += 1
-                    if i < skip_count:
-                        continue
-
-                    rospy.sleep(5)
-
-                    # Initialization of the currrent iteration
-                    set_cur_params(cur_speed, cur_ra,
-                                   cur_tug_speed, cur_obs_speed)
-
-                    if not rospy.is_shutdown():
-                        rospy.sleep(3)
-
-                    child, child_screen_record = launch_simulation(i)
-
-                    rospy.sleep(5)
-                    goal_position = rospy.get_param(
-                        "/asv/LOSNode/waypoints")[-1]
-
-                    headon_distance_metric1_obs1 = HeadOnDistanceMetric1()
-                    headon_distance_metric3_obs1 = HeadOnDistanceMetric3()
-
-                    # Section to be replace with a proper ending condition
-                    start = rospy.Time.now()
-                    overtaketime = None
-                    while not rospy.is_shutdown():
-
-                        rospy.loginfo(".")
-                        # end if timeout
-                        ellapsed = rospy.Time.now() - start
-                        end = ellapsed > rospy.Duration.from_sec(timeout)
-
-                        rospy.loginfo("simulation ellapsed : " + str(ellapsed.to_sec()) +
-                                      ", goal dist: " + str(goal_dist) + " Ra: "+str(Ra))
-
-                        # end if passed too much time after overtaking
-                        if overtaketime is None and check_overtaketime(s_params["one_obs"], overtake_right_1, overtake_right_2):
-                            overtaketime = rospy.Time.now()
-
-                        if not overtaketime is None:
-                            ellapsed_from_overtake = rospy.Time.now() - overtaketime
-                            rospy.loginfo(
-                                "ellapsed from overtake: " + str(ellapsed_from_overtake.to_sec()))
-                            end_overtake = ellapsed_from_overtake > rospy.Duration.from_sec(
-                                timeout_after_overtake)
-                            end = end or end_overtake
-
-                        headon_distance_metric1_obs1.update(ellapsed,
-                                                            last_main_pose, last_obs1_pose)
-                        headon_distance_metric3_obs1.update(ellapsed,
-                                                            last_main_pose, last_obs1_pose)
-
-                        if end or goal_reached:
-                            try:
-                                child.send_signal(signal.SIGINT)
-                                child.send_signal(signal.SIGINT)
-                            except:
-                                pass
-                            try:
-                                child_screen_record.send_signal(signal.SIGINT)
-                                child_screen_record.send_signal(signal.SIGINT)
-                            except:
-                                pass
-                            try:
-                                child.terminate()
-                                child.terminate()
-                            except:
-                                pass
-                            try:
-                                child_screen_record.terminate()
-                                child_screen_record.terminate()
-                            except:
-                                pass
-
+                    for tug_lookahead_distance in s_params["tug_lookahead_distance"]:
+                        if rospy.is_shutdown():
                             break
 
-                        result = {
-                            'simulation_id': i,
-                            'cur_speed': cur_speed,
-                            'ra': cur_ra,
-                            'tug_speed': cur_tug_speed,
-                            'obs_speed': cur_obs_speed,
-                            'min_obstacle_distance_1': min_obs1_distance,
-                            'min_obstacle_distance_2': min_obs2_distance,
-                            'min_obstacle_distance': min([min_obs1_distance, min_obs2_distance]),
-                            'headon_distance_obstacle_1': headon_distance_metric1_obs1.distance,
-                            'headon_time_obstacle_1': headon_distance_metric1_obs1.time.to_sec(),
-                            'headon_distance_obstacle_3': headon_distance_metric3_obs1.distance,
-                            'headon_time_obstacle_3': headon_distance_metric3_obs1.time.to_sec(),
-                            'avoiding_side_1': "right" if overtake_right_1 else "left",
+                        rospy.logwarn(
+                            "SIMULATION {i} curr_speed: {cur_speed}, ra: {cur_ra}, tug_speed: {cur_tug_speed}, obs_speed: {cur_obs_speed},tug_lookahead_distance: {tug_lookahead_distance} )".format(**locals()))
+                        i += 1
+                        if i < skip_count:
+                            continue
 
-                            # 'overtake_right_1': overtake_right_1,
-                            # 'overtake_right_2': overtake_right_2,
-                            "sim_duration": (rospy.Time.now() - start).to_sec()
-                        }
+                        rospy.sleep(5)
 
-                        rospy.loginfo("current result : " + str(result))
+                        # Initialization of the currrent iteration
+                        set_cur_params(cur_speed, cur_ra, cur_tug_speed,
+                                       cur_obs_speed, tug_lookahead_distance)
 
-                        rospy.sleep(1)
+                        if not rospy.is_shutdown():
+                            rospy.sleep(3)
 
-                    # Write the header only if the file have been created by the first time
-                    file_exists = os.path.isfile(csv_filename)
+                        child, child_screen_record = launch_simulation(i)
 
-                    with open(csv_filename, mode='a') as csv_file:
-                        fieldnames = ["simulation_id",
-                                      "cur_speed",
-                                      "ra",
-                                      "tug_speed",
-                                      "obs_speed",
-                                      "min_obstacle_distance_1",
-                                      "min_obstacle_distance_2",
-                                      "min_obstacle_distance",
-                                      "headon_distance_obstacle_1",
-                                      "headon_time_obstacle_1",
-                                      "headon_distance_obstacle_3",
-                                      "headon_time_obstacle_3",
-                                      "avoiding_side_1",
-                                      # "overtake_right_1",
-                                      # "overtake_right_2",
-                                      "sim_duration"]
+                        rospy.sleep(5)
+                        goal_position = rospy.get_param(
+                            "/asv/LOSNode/waypoints")[-1]
 
-                        writer = csv.DictWriter(
-                            csv_file, fieldnames=fieldnames)
+                        headon_distance_metric1_obs1 = HeadOnDistanceMetric1()
+                        headon_distance_metric3_obs1 = HeadOnDistanceMetric3()
 
-                        if not file_exists:
-                            writer.writeheader()
+                        # Section to be replace with a proper ending condition
+                        start = rospy.Time.now()
+                        overtaketime = None
+                        while not rospy.is_shutdown():
 
-                        writer.writerow(result)
+                            rospy.loginfo(".")
+                            # end if timeout
+                            ellapsed = rospy.Time.now() - start
+                            end = ellapsed > rospy.Duration.from_sec(timeout)
 
-                    rospy.sleep(5)
+                            rospy.loginfo("simulation ellapsed : " + str(ellapsed.to_sec()) +
+                                          ", goal dist: " + str(goal_dist) + " Ra: "+str(Ra))
 
-                    # Cleaning iteration values
-                    reset_global_values()
+                            # end if passed too much time after overtaking
+                            if overtaketime is None and check_overtaketime(s_params["one_obs"], overtake_right_1, overtake_right_2):
+                                overtaketime = rospy.Time.now()
+
+                            if not overtaketime is None:
+                                ellapsed_from_overtake = rospy.Time.now() - overtaketime
+                                rospy.loginfo(
+                                    "ellapsed from overtake: " + str(ellapsed_from_overtake.to_sec()))
+                                end_overtake = ellapsed_from_overtake > rospy.Duration.from_sec(
+                                    timeout_after_overtake)
+                                end = end or end_overtake
+
+                            headon_distance_metric1_obs1.update(ellapsed,
+                                                                last_main_pose, last_obs1_pose)
+                            headon_distance_metric3_obs1.update(ellapsed,
+                                                                last_main_pose, last_obs1_pose)
+
+                            if end or goal_reached:
+                                try:
+                                    child.send_signal(signal.SIGINT)
+                                    child.send_signal(signal.SIGINT)
+                                except:
+                                    pass
+                                try:
+                                    child_screen_record.send_signal(
+                                        signal.SIGINT)
+                                    child_screen_record.send_signal(
+                                        signal.SIGINT)
+                                except:
+                                    pass
+                                try:
+                                    child.terminate()
+                                    child.terminate()
+                                except:
+                                    pass
+                                try:
+                                    child_screen_record.terminate()
+                                    child_screen_record.terminate()
+                                except:
+                                    pass
+
+                                break
+
+                            def get_avoiding_side(value):
+                                if value is None:
+                                    return None
+                                elif value:
+                                    return "right"
+                                else:
+                                    return "left"
+
+                            result = {
+                                'simulation_id': i,
+                                'cur_speed': cur_speed,
+                                'ra': cur_ra,
+                                'tug_speed': cur_tug_speed,
+                                'obs_speed': cur_obs_speed,
+                                'min_obstacle_distance_1': min_obs1_distance,
+                                'min_obstacle_distance_2': min_obs2_distance,
+                                'min_obstacle_distance': min([min_obs1_distance, min_obs2_distance]),
+                                'headon_distance_obstacle_1': headon_distance_metric1_obs1.distance,
+                                'headon_time_obstacle_1': headon_distance_metric1_obs1.get_seconds(),
+                                'headon_distance_obstacle_3': headon_distance_metric3_obs1.distance,
+                                'headon_time_obstacle_3': headon_distance_metric3_obs1.get_seconds(),
+                                'avoiding_side_1': get_avoiding_side(overtake_right_1),
+
+                                # 'overtake_right_1': overtake_right_1,
+                                # 'overtake_right_2': overtake_right_2,
+                                "sim_duration": (rospy.Time.now() - start).to_sec()
+                            }
+
+                            rospy.loginfo("current result : " + str(result))
+
+                            rospy.sleep(1)
+
+                        # Write the header only if the file have been created by the first time
+                        file_exists = os.path.isfile(csv_filename)
+
+                        with open(csv_filename, mode='a') as csv_file:
+                            fieldnames = ["simulation_id",
+                                          "cur_speed",
+                                          "ra",
+                                          "tug_speed",
+                                          "obs_speed",
+                                          "min_obstacle_distance_1",
+                                          "min_obstacle_distance_2",
+                                          "min_obstacle_distance",
+                                          "headon_distance_obstacle_1",
+                                          "headon_time_obstacle_1",
+                                          "headon_distance_obstacle_3",
+                                          "headon_time_obstacle_3",
+                                          "avoiding_side_1",
+                                          # "overtake_right_1",
+                                          # "overtake_right_2",
+                                          "sim_duration"]
+
+                            writer = csv.DictWriter(
+                                csv_file, fieldnames=fieldnames)
+
+                            if not file_exists:
+                                writer.writeheader()
+
+                            writer.writerow(result)
+
+                        rospy.sleep(5)
+
+                        # Cleaning iteration values
+                        reset_global_values()
