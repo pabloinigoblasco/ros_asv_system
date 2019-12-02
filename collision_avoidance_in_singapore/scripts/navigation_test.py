@@ -47,7 +47,12 @@ s_params = {
     "one_obs": True
 }
 
-skip_count = 0
+skip_count = 101 # used to pause the simulation and continue later. put here the index you want to start with, if the last in the result file was 100, put 101
+
+# Sample time to check if the computation of the iterations is being done properly
+timeout = 750 # should be configured dependin on the distance between ships: 450s was used for 300m, for 1km it is used 750
+timeout_after_overtake = 8
+
 main_position = (0, 0, 0)
 obs1_position = (sys.maxsize, sys.maxsize, sys.maxsize)
 obs2_position = (sys.maxsize, sys.maxsize, sys.maxsize)
@@ -419,9 +424,6 @@ if __name__ == "__main__":
     headon_distance_metric1_obs1 = None
     headon_distance_metric3_obs1 = None
 
-    # Sample time to check if the computation of the iterations is being done properly
-    timeout = 450
-    timeout_after_overtake = 8
     # File to store the results
     csv_filename = "results.csv"
 
@@ -537,9 +539,9 @@ if __name__ == "__main__":
                                 'ra': cur_ra,
                                 'tug_speed': cur_tug_speed,
                                 'obs_speed': cur_obs_speed,
-                                'min_obstacle_distance_1': min_obs1_distance,
-                                'min_obstacle_distance_2': min_obs2_distance,
-                                'min_obstacle_distance': min([min_obs1_distance, min_obs2_distance]),
+                                'min_obstacle_distance': min_obs1_distance,
+                                #'min_obstacle_distance_2': min_obs2_distance,
+                                #'min_obstacle_distance_any': min([min_obs1_distance, min_obs2_distance]),
                                 'headon_distance_obstacle_1': headon_distance_metric1_obs1.distance,
                                 'headon_time_obstacle_1': headon_distance_metric1_obs1.get_seconds(),
                                 'headon_distance_obstacle_3': headon_distance_metric3_obs1.distance,
@@ -564,9 +566,9 @@ if __name__ == "__main__":
                                           "ra",
                                           "tug_speed",
                                           "obs_speed",
-                                          "min_obstacle_distance_1",
-                                          "min_obstacle_distance_2",
                                           "min_obstacle_distance",
+                                          #"min_obstacle_distance_2",
+                                          #"min_obstacle_distance_any",
                                           "headon_distance_obstacle_1",
                                           "headon_time_obstacle_1",
                                           "headon_distance_obstacle_3",
